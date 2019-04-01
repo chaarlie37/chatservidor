@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -21,7 +23,7 @@ import java.util.ArrayList;
  */
 public class Chat {
     
-    public Chat(int port, VentanaChat ventana) throws UnknownHostException, IOException, AWTException{
+    public Chat(int port, VentanaChat ventana) throws UnknownHostException, IOException, AWTException, ClassNotFoundException{
         this.ventana = ventana;
         EstablecerConexion(port);
     }
@@ -30,6 +32,8 @@ public class Chat {
     private ServerSocket serverSocket;
     private Socket socket;
     private DataOutputStream streamToClient;
+    private ObjectOutputStream objectStreamToClient;
+    private ObjectInputStream objectInputStream;
     private InputStreamReader streamFromClient;
     private BufferedReader bufferedReader;
     private Thread hilo;
@@ -37,7 +41,7 @@ public class Chat {
     public Notification notificacion = new Notification();
     private String ip_cliente;
     
-    public void EstablecerConexion(int port) throws UnknownHostException, IOException, AWTException{       
+    public void EstablecerConexion(int port) throws UnknownHostException, IOException, AWTException, ClassNotFoundException{       
         /*
         socket = new Socket(ip, port);
         streamToServer = new DataOutputStream(socket.getOutputStream());
@@ -56,11 +60,17 @@ public class Chat {
         socket = serverSocket.accept();
         String confirmacion;
         do{
-            streamFromClient = new InputStreamReader(socket.getInputStream());
-            bufferedReader = new BufferedReader(streamFromClient);
-            confirmacion = bufferedReader.readLine();
-            streamToClient = new DataOutputStream(socket.getOutputStream());
-            streamToClient.writeBytes(confirmacion + '\n');
+            //streamFromClient = new InputStreamReader(socket.getInputStream());
+            //bufferedReader = new BufferedReader(streamFromClient);
+            //confirmacion = bufferedReader.readLine();
+            //streamToClient = new DataOutputStream(socket.getOutputStream());
+            //streamToClient.writeBytes(confirmacion + '\n');
+            objectStreamToClient = new ObjectOutputStream(socket.getOutputStream());
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
+            confirmacion = DecodificarLista((ArrayList<Integer>) objectInputStream.readObject());
+            System.out.println(confirmacion);
+            EnviarMensaje(confirmacion);
+            
         }while(!confirmacion.equals("confirm"));
         StringBuilder ip = new StringBuilder(socket.getInetAddress().toString());
         ip.deleteCharAt(0);
@@ -68,15 +78,17 @@ public class Chat {
     }
     
     public void EnviarMensaje(String msg) throws IOException{
-        streamToClient.writeBytes(msg + '\n');
+        //streamToClient.writeBytes(msg + '\n');
+
         ArrayList<Integer> list = CodificarString(msg);
-        System.out.println(DecodificarLista(list));
+        objectStreamToClient.writeObject(list);
     }
     
     public void Escuchar(){
         try {
             String mensajeRecibido;
-            mensajeRecibido = bufferedReader.readLine();
+            //mensajeRecibido = bufferedReader.readLine();
+            mensajeRecibido = DecodificarLista((ArrayList < Integer >)objectInputStream.readObject());
             if ((!mensajeRecibido.equals(""))) {
                 ventana.EscribirMensajeCliente(mensajeRecibido);
                 if(ventana.minimizado){
@@ -86,7 +98,8 @@ public class Chat {
                 }
             }
         } catch (IOException e) {
-        } catch(AWTException e){}
+        } catch(AWTException e){
+        } catch(ClassNotFoundException e){}
 
     }
     

@@ -55,7 +55,7 @@ public class VentanaChat extends javax.swing.JFrame {
             ip_cliente = chat.getIpCliente();
         } catch (UnknownHostException e) {
         } catch (IOException | AWTException e) {
-        }
+        } catch (ClassNotFoundException e){}
         hilo.start();
     }
 
@@ -87,6 +87,7 @@ public class VentanaChat extends javax.swing.JFrame {
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Chat Servidor UI");
 
         mensajeParaEnviar.setColumns(20);
         mensajeParaEnviar.setRows(5);
@@ -175,7 +176,8 @@ public class VentanaChat extends javax.swing.JFrame {
             }
         }catch (UnknownHostException e) {
         }catch (IOException e) {
-        }catch(AWTException e){}      
+        }catch(AWTException e){
+        }catch (ClassNotFoundException e){}      
     }//GEN-LAST:event_bCerrarConexionActionPerformed
 
     private void bEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bEnviarActionPerformed
